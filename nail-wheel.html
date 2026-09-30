@@ -103,7 +103,7 @@
   <header>
     <span class="eyebrow">Blind Box Nails</span>
     <h1>今天擦什麼？</h1>
-    <p class="lede">按中間的「轉」，三圈一起轉：外圈顏色、中圈風格、內圈點綴。已經有想法的那圈可以鎖住。</p>
+    <p class="lede">按中間的「轉」，四圈一起轉：最外兩圈是主色和配色、中圈風格、內圈點綴。已經有想法的那圈可以鎖住。</p>
   </header>
 
   <div class="stage">
@@ -113,29 +113,34 @@
           <path d="M15 43 C6 30 2 20 2 12 C2 5 8 1 15 1 C22 1 28 5 28 12 C28 20 24 30 15 43 Z" fill="var(--ink)"/>
           <path d="M9 10 C9 7 11 5 14 5" stroke="var(--surface)" stroke-width="2" fill="none" stroke-linecap="round" opacity=".7"/>
         </svg>
-        <canvas id="wheel" aria-label="盲盒美甲轉盤：外圈顏色、中圈風格、內圈點綴" role="img"></canvas>
+        <canvas id="wheel" aria-label="盲盒美甲轉盤：外兩圈主色與配色、中圈風格、內圈點綴" role="img"></canvas>
         <button class="hub" id="spin" type="button">轉</button>
       </div>
-      <div class="legend">外圈 <span>COLOR</span> · 中圈 <span>STYLE</span> · 內圈 <span>EXTRA</span></div>
+      <div class="legend">外兩圈 <span>COLOR×2</span> · 中圈 <span>STYLE</span> · 內圈 <span>EXTRA</span></div>
     </div>
 
     <section class="card" aria-live="polite">
       <h2>這次的盲盒 <small id="status">範例組合</small></h2>
       <div class="rows">
         <div class="row">
-          <span class="tag">顏色</span>
+          <span class="tag">主色</span>
           <span class="val"><span class="swatch" id="c-sw"></span><span><span id="c-name"></span> <span class="shade" id="c-no"></span></span></span>
           <button class="lock" id="lock-0" type="button" aria-pressed="false">鎖定</button>
         </div>
         <div class="row">
+          <span class="tag">配色</span>
+          <span class="val"><span class="swatch" id="c2-sw"></span><span><span id="c2-name"></span> <span class="shade" id="c2-no"></span></span></span>
+          <button class="lock" id="lock-1" type="button" aria-pressed="false">鎖定</button>
+        </div>
+        <div class="row">
           <span class="tag">風格</span>
           <span class="val"><span><span id="s-name"></span><span class="sub" id="s-desc"></span></span></span>
-          <button class="lock" id="lock-1" type="button" aria-pressed="false">鎖定</button>
+          <button class="lock" id="lock-2" type="button" aria-pressed="false">鎖定</button>
         </div>
         <div class="row">
           <span class="tag">點綴</span>
           <span class="val"><span><span id="b-name"></span><span class="sub" id="b-desc"></span></span></span>
-          <button class="lock" id="lock-2" type="button" aria-pressed="false">鎖定</button>
+          <button class="lock" id="lock-3" type="button" aria-pressed="false">鎖定</button>
         </div>
       </div>
       <div class="say">
@@ -175,33 +180,40 @@ const COLORS = [
 const STYLES = [
   { n: "貓眼", d: "磁吸光帶，轉手會流動" },
   { n: "格紋", d: "菱格或蘇格蘭格，秋冬必備" },
-  { n: "腮紅暈染", d: "甲面中央暈出一團金粉光" },
+  { n: "暈染", d: "像腮紅一樣暈開，可以帶一點金粉" },
   { n: "漸層", d: "甲根到甲尖深淺過渡，溫柔耐看" },
-  { n: "手繪小花", d: "小雛菊、五瓣花散落在甲面" },
-  { n: "乾燥花", d: "真花壓進凝膠，可以排成花圈" },
+  { n: "花", d: "手繪小花或乾燥花，散落或排成花圈" },
+  { n: "跳色", d: "主色、配色每指交替混搭" },
+  { n: "簡約", d: "素色為主，一兩指小重點就好" },
+  { n: "豹紋", d: "豹紋斑點，滿版或只做一指都可以" },
+  { n: "玻璃紙", d: "幻彩玻璃紙碎片，透光會變色" },
+  { n: "歐泊粉", d: "歐泊石般的彩虹細閃，裸透底最美" },
+  { n: "人魚粉", d: "人魚珠光粉推出貝殼般的光澤" },
   { n: "透明亮粉", d: "裸透底加細閃，乾淨又有光" },
   { n: "霧面", d: "啞光質地，低調的奶咖感" },
   { n: "液態金屬", d: "一小塊金色鏡面，像融化的金子" },
   { n: "蝴蝶結", d: "細線在甲面綁一個小蝴蝶結" },
-  { n: "跳色拼接", d: "每指不同顏色或花樣混搭" },
-  { n: "人魚貝殼", d: "貝殼紋路加珠光，海洋感" },
+  { n: "法式", d: "甲尖一道細邊，白色或金色都好" },
 ];
 const BONUS = [
-  { n: "立體水滴", d: "透明凝膠點出小水珠" },
+  { n: "小鑽", d: "一兩顆小碎鑽點在甲根" },
+  { n: "珍珠", d: "小珍珠或金色鋼珠" },
+  { n: "貼紙", d: "花、楓葉、星星等小貼紙" },
   { n: "金箔", d: "碎金箔點在邊角" },
+  { n: "金線", d: "細細的金色線條" },
+  { n: "金屬感線條", d: "立體鏡面線條，像金屬在流動" },
+  { n: "立體水滴", d: "透明凝膠點出小水珠" },
   { n: "幻彩亮片", d: "星星、愛心、蝴蝶形亮片" },
   { n: "白色拉線", d: "一道細白線劃過甲面" },
-  { n: "珍珠", d: "一兩顆小珍珠或金色鋼珠" },
-  { n: "楓葉", d: "秋天小楓葉貼紙或手繪" },
-  { n: "白色描邊", d: "甲緣細細一圈白邊" },
   { n: "留白不加", d: "乾淨就好，不加飾品" },
 ];
 
 const TAU = Math.PI * 2, POINTER = -Math.PI / 2;
 const rings = [
-  { items: COLORS, r0: .86, r1: 1,   rot: 0, locked: false },
-  { items: STYLES, r0: .56, r1: .845, rot: 0, locked: false },
-  { items: BONUS,  r0: .245, r1: .545, rot: 0, locked: false },
+  { items: COLORS, r0: .905, r1: 1,   rot: 0, locked: false, color: true },
+  { items: COLORS, r0: .8,  r1: .895, rot: 0, locked: false, color: true },
+  { items: STYLES, r0: .53, r1: .785, rot: 0, locked: false },
+  { items: BONUS,  r0: .245, r1: .515, rot: 0, locked: false },
 ];
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const $ = id => document.getElementById(id);
@@ -246,23 +258,23 @@ function draw() {
       ctx.arc(c, c, ro, a0, a1);
       ctx.arc(c, c, rin, a1, a0, true);
       ctx.closePath();
-      if (ri === 0) {
+      if (ring.color) {
         if (it.metal) {
-          const mid = a0 + step / 2;
           const g = ctx.createLinearGradient(c + Math.cos(a0) * ro, c + Math.sin(a0) * ro, c + Math.cos(a1) * ro, c + Math.sin(a1) * ro);
           g.addColorStop(0, it.metal[1]); g.addColorStop(.5, it.metal[0]); g.addColorStop(1, it.metal[1]);
           ctx.fillStyle = g;
         } else ctx.fillStyle = it.hex;
       } else {
-        ctx.fillStyle = tones[ri - 1][i % 2];
+        ctx.fillStyle = tones[ri - 2][i % 2];
       }
       ctx.fill();
       ctx.lineWidth = 2;
       ctx.strokeStyle = seam;
       ctx.stroke();
 
-      if (ri > 0) {
-        const fs = Math.max(13, R * (ri === 1 ? .07 : .068));
+      if (!ring.color) {
+        // Shrink long labels so they stay inside the band
+        const fs = Math.max(9, Math.min(R * .066, (ro - rin) * .86 / it.n.length));
         ctx.save();
         ctx.translate(c, c);
         ctx.rotate(a0 + step / 2);
@@ -290,12 +302,12 @@ function draw() {
 }
 
 function current() {
-  const [ci, si, bi] = rings.map(idx);
-  return { c: COLORS[ci], s: STYLES[si], b: BONUS[bi], ci, si, bi };
+  const [ci, c2i, si, bi] = rings.map(idx);
+  return { c: COLORS[ci], c2: COLORS[c2i], s: STYLES[si], b: BONUS[bi], ci, c2i, si, bi };
 }
 function sentence(r) {
   const extra = r.b.n === "留白不加" ? "不用加飾品" : `加一點${r.b.n}`;
-  return `想做「${r.c.n}」色系的${r.s.n}，${extra}。細節交給你發揮！`;
+  return `想用「${r.c.n}」配「${r.c2.n}」，風格做${r.s.n}，${extra}。細節交給你發揮！`;
 }
 function paint(el, color) {
   el.style.background = color.metal ? `linear-gradient(135deg, ${color.metal[1]}, ${color.metal[0]} 50%, ${color.metal[1]})` : color.hex;
@@ -305,6 +317,9 @@ function render() {
   paint($("c-sw"), r.c);
   $("c-name").textContent = r.c.n;
   $("c-no").textContent = "No." + String(r.ci + 1).padStart(2, "0");
+  paint($("c2-sw"), r.c2);
+  $("c2-name").textContent = r.c2.n;
+  $("c2-no").textContent = "No." + String(r.c2i + 1).padStart(2, "0");
   $("s-name").textContent = r.s.n;
   $("s-desc").textContent = r.s.d;
   $("b-name").textContent = r.b.n;
@@ -316,7 +331,14 @@ function ease(t) { return 1 - Math.pow(1 - t, 4); }
 function spin() {
   if (spinning) return;
   const active = rings.filter(r => !r.locked);
-  if (!active.length) { toast("三圈都鎖住了，先解鎖一圈再轉。"); return; }
+  if (!active.length) { toast("四圈都鎖住了，先解鎖一圈再轉。"); return; }
+  // Pick targets first so 主色 and 配色 never land on the same color
+  const targets = rings.map(r => r.locked ? idx(r) : Math.floor(Math.random() * r.items.length));
+  if (targets[0] === targets[1]) {
+    if (rings[0].locked && rings[1].locked) { toast("主色和配色鎖在同一個顏色，先解鎖其中一圈。"); return; }
+    const k = rings[1].locked ? 0 : 1;
+    targets[k] = (targets[k] + 1 + Math.floor(Math.random() * (COLORS.length - 1))) % COLORS.length;
+  }
   spinning = true;
   $("spin").disabled = $("spin2").disabled = true;
   $("status").textContent = "轉動中…";
@@ -324,7 +346,7 @@ function spin() {
   const now = performance.now();
   const plans = rings.map((ring, k) => {
     if (ring.locked) return null;
-    const target = Math.floor(Math.random() * ring.items.length);
+    const target = targets[k];
     const base = aimAt(ring, target, (Math.random() - .5) * .6);
     const delta = (((base - ring.rot) % TAU) + TAU) % TAU;
     const turns = reduce ? 0 : 4 + k;
@@ -354,12 +376,12 @@ function spin() {
 
 function toast(msg) { $("toast").textContent = msg; }
 
-const KEY = "nail-wheel-history-v2";
+const KEY = "nail-wheel-history-v3";
 function load() { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch { return []; } }
 function save() {
   const r = current();
   const list = load();
-  list.unshift({ ci: r.ci, si: r.si, bi: r.bi, t: Date.now() });
+  list.unshift({ ci: r.ci, c2i: r.c2i, si: r.si, bi: r.bi, t: Date.now() });
   try { localStorage.setItem(KEY, JSON.stringify(list.slice(0, 15))); } catch {}
   renderHistory();
 }
@@ -367,11 +389,12 @@ function renderHistory() {
   const list = load(), ol = $("hist");
   ol.textContent = "";
   list.forEach(h => {
-    const c = COLORS[h.ci], s = STYLES[h.si], b = BONUS[h.bi];
-    if (!c || !s || !b) return;
+    const c = COLORS[h.ci], c2 = COLORS[h.c2i], s = STYLES[h.si], b = BONUS[h.bi];
+    if (!c || !c2 || !s || !b) return;
     const li = document.createElement("li");
-    const dot = document.createElement("span"); dot.className = "dot"; paint(dot, c);
-    const txt = document.createElement("span"); txt.textContent = `${c.n} · ${s.n} · ${b.n}`;
+    const dot = document.createElement("span"); dot.className = "dot";
+    dot.style.background = `linear-gradient(90deg, ${c.hex} 50%, ${c2.hex} 50%)`;
+    const txt = document.createElement("span"); txt.textContent = `${c.n}＋${c2.n} · ${s.n} · ${b.n}`;
     const tm = document.createElement("time");
     const d = new Date(h.t);
     tm.dateTime = d.toISOString();
@@ -408,10 +431,11 @@ $("copy").addEventListener("click", () => {
   try { navigator.clipboard.writeText(text).then(() => toast("已複製，傳給美甲師吧！"), fallback); } catch { fallback(); }
 });
 
-// Opening state: a sample combo (焦糖棕 · 格紋 · 金箔)
+// Opening state: a sample combo (焦糖棕＋牛奶白 · 格紋 · 金箔)
 rings[0].rot = aimAt(rings[0], 3, 0);
-rings[1].rot = aimAt(rings[1], 1, 0);
+rings[1].rot = aimAt(rings[1], 10, 0);
 rings[2].rot = aimAt(rings[2], 1, 0);
+rings[3].rot = aimAt(rings[3], 3, 0);
 
 new ResizeObserver(resize).observe(canvas.parentElement);
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", draw);
