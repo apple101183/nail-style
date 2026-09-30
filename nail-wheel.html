@@ -1,0 +1,421 @@
+<title>盲盒美甲轉盤</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --ground: #F7F0F2;
+    --surface: #FFFFFF;
+    --ink: #2B1D28;
+    --muted: #7A6874;
+    --line: #E6D9DE;
+    --accent: #B5234A;
+    --accent-ink: #FFFFFF;
+    --ring-a: #F1E4E9;
+    --ring-b: #FBF6F8;
+    --ring-c: #EDE2F0;
+    --ring-d: #F8F2FA;
+    --seam: #F7F0F2;
+    --serif: "Microsoft JhengHei", "微軟正黑體", "PingFang TC", "Noto Sans TC", sans-serif;
+    --sans: "Microsoft JhengHei", "微軟正黑體", "PingFang TC", "Noto Sans TC", sans-serif;
+    --mono: "DM Mono", ui-monospace, "Cascadia Mono", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --ground: #17111A; --surface: #221A25; --ink: #F3E9EF; --muted: #A898A4;
+      --line: #3A2E3C; --accent: #F0648A; --accent-ink: #1A0F16;
+      --ring-a: #2A202D; --ring-b: #322636; --ring-c: #2E2436; --ring-d: #3A2D42; --seam: #17111A;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --ground: #17111A; --surface: #221A25; --ink: #F3E9EF; --muted: #A898A4;
+    --line: #3A2E3C; --accent: #F0648A; --accent-ink: #1A0F16;
+    --ring-a: #2A202D; --ring-b: #322636; --ring-c: #2E2436; --ring-d: #3A2D42; --seam: #17111A;
+  }
+
+  body { background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 17px; line-height: 1.65; }
+  .wrap { max-width: 980px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 48px; }
+
+  header { display: grid; gap: 4px; margin-bottom: 20px; }
+  .eyebrow { font-family: var(--mono); font-size: 13px; letter-spacing: .18em; text-transform: uppercase; color: var(--accent); }
+  h1 { font-family: var(--serif); font-weight: 700; font-size: clamp(36px, 7vw, 52px); line-height: 1.15; margin: 0; text-wrap: balance; }
+  .lede { color: var(--muted); margin: 0; max-width: 42ch; }
+
+  .stage { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+  @media (max-width: 760px) { .stage { grid-template-columns: 1fr; gap: 24px; } }
+
+  .wheel-box { position: relative; width: min(100%, 500px); aspect-ratio: 1; max-width: 100%; margin: 0 auto; }
+  canvas { width: 100%; height: 100%; display: block; }
+  .pointer { position: absolute; left: 50%; top: -6px; width: 30px; height: 44px; transform: translateX(-50%); z-index: 2; filter: drop-shadow(0 2px 3px rgb(0 0 0 / .25)); pointer-events: none; }
+  .hub {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    width: 22%; aspect-ratio: 1; border-radius: 50%; border: 0; cursor: pointer;
+    background: var(--accent); color: var(--accent-ink);
+    font-family: var(--serif); font-weight: 700; font-size: clamp(24px, 6vw, 32px);
+    box-shadow: 0 0 0 5px var(--ground), 0 6px 16px rgb(0 0 0 / .18);
+    transition: transform .15s ease;
+  }
+  .hub:hover { transform: translate(-50%, -50%) scale(1.05); }
+  .hub:active { transform: translate(-50%, -50%) scale(.96); }
+  .hub:disabled { cursor: progress; opacity: .85; }
+  .hub:focus-visible, button:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+  .legend { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; margin-top: 14px; font-size: 14px; color: var(--muted); }
+  .legend span { font-family: var(--mono); }
+
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 20px; display: grid; gap: 16px; }
+  .card h2 { font-family: var(--serif); font-size: 24px; margin: 0; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .card h2 small { font-family: var(--mono); font-size: 13px; font-weight: 400; color: var(--muted); }
+
+  .rows { display: grid; gap: 0; }
+  .row { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding-block: 12px; border-top: 1px solid var(--line); }
+  .row:first-child { border-top: 0; padding-top: 0; }
+  .row .tag { font-size: 14px; color: var(--muted); letter-spacing: .08em; }
+  .row .val { font-family: var(--serif); font-weight: 700; font-size: 24px; display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .row .sub { font-family: var(--sans); font-size: 15px; color: var(--muted); font-weight: 400; display: block; }
+  .swatch { flex: none; width: 30px; height: 40px; border-radius: 13px 13px 7px 7px; border: 1px solid rgb(0 0 0 / .12); }
+  .shade { font-family: var(--mono); font-size: 13px; color: var(--muted); font-weight: 400; }
+  .lock { border: 1px solid var(--line); background: transparent; color: var(--muted); border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 14px; cursor: pointer; white-space: nowrap; }
+  .lock[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+
+  .say { background: var(--ground); border-radius: 12px; padding: 12px 14px; display: grid; gap: 8px; }
+  .say .label { font-size: 14px; color: var(--muted); }
+  .say p { margin: 0; font-family: var(--serif); font-weight: 400; font-size: 20px; line-height: 1.5; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn { border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; font-size: 16px; border-radius: 999px; padding: 9px 18px; cursor: pointer; }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 700; }
+
+  .history { margin-top: 28px; display: grid; gap: 10px; }
+  .history-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .history h3 { font-family: var(--serif); font-size: 22px; margin: 0; }
+  .history ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+  .history li { display: grid; grid-template-columns: 14px minmax(0,1fr) auto; gap: 10px; align-items: center; padding-block: 10px; border-bottom: 1px solid var(--line); font-size: 16px; }
+  .history .dot { width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgb(0 0 0 / .12); }
+  .history time { font-family: var(--mono); font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .empty { color: var(--muted); font-size: 16px; margin: 0; }
+  .toast { font-size: 15px; color: var(--accent); min-height: 1.2em; }
+
+  @media (prefers-reduced-motion: reduce) { .hub { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Blind Box Nails</span>
+    <h1>今天擦什麼？</h1>
+    <p class="lede">按中間的「轉」，三圈一起轉：外圈顏色、中圈風格、內圈點綴。已經有想法的那圈可以鎖住。</p>
+  </header>
+
+  <div class="stage">
+    <div>
+      <div class="wheel-box">
+        <svg class="pointer" viewBox="0 0 30 44" aria-hidden="true">
+          <path d="M15 43 C6 30 2 20 2 12 C2 5 8 1 15 1 C22 1 28 5 28 12 C28 20 24 30 15 43 Z" fill="var(--ink)"/>
+          <path d="M9 10 C9 7 11 5 14 5" stroke="var(--surface)" stroke-width="2" fill="none" stroke-linecap="round" opacity=".7"/>
+        </svg>
+        <canvas id="wheel" aria-label="盲盒美甲轉盤：外圈顏色、中圈風格、內圈點綴" role="img"></canvas>
+        <button class="hub" id="spin" type="button">轉</button>
+      </div>
+      <div class="legend">外圈 <span>COLOR</span> · 中圈 <span>STYLE</span> · 內圈 <span>EXTRA</span></div>
+    </div>
+
+    <section class="card" aria-live="polite">
+      <h2>這次的盲盒 <small id="status">範例組合</small></h2>
+      <div class="rows">
+        <div class="row">
+          <span class="tag">顏色</span>
+          <span class="val"><span class="swatch" id="c-sw"></span><span><span id="c-name"></span> <span class="shade" id="c-no"></span></span></span>
+          <button class="lock" id="lock-0" type="button" aria-pressed="false">鎖定</button>
+        </div>
+        <div class="row">
+          <span class="tag">風格</span>
+          <span class="val"><span><span id="s-name"></span><span class="sub" id="s-desc"></span></span></span>
+          <button class="lock" id="lock-1" type="button" aria-pressed="false">鎖定</button>
+        </div>
+        <div class="row">
+          <span class="tag">點綴</span>
+          <span class="val"><span><span id="b-name"></span><span class="sub" id="b-desc"></span></span></span>
+          <button class="lock" id="lock-2" type="button" aria-pressed="false">鎖定</button>
+        </div>
+      </div>
+      <div class="say">
+        <span class="label">給美甲師看</span>
+        <p id="say"></p>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="spin2" type="button">再轉一次</button>
+        <button class="btn" id="copy" type="button">複製這句</button>
+      </div>
+      <div class="toast" id="toast"></div>
+    </section>
+  </div>
+
+  <section class="history">
+    <div class="history-head">
+      <h3>轉過的組合</h3>
+      <button class="btn" id="clear" type="button" hidden>清除紀錄</button>
+    </div>
+    <ol id="hist"></ol>
+    <p class="empty" id="hist-empty">還沒有紀錄，轉一次就會記在這台裝置上。</p>
+  </section>
+</div>
+
+<script>
+const COLORS = [
+  { n: "奶茶裸", hex: "#D8BCA6" },   { n: "燕麥灰", hex: "#B8AEA2" },
+  { n: "可可摩卡", hex: "#5B4447" }, { n: "焦糖棕", hex: "#7B4A31" },
+  { n: "香檳金", hex: "#D4B477", metal: ["#F4E3B5", "#B8944F"] },
+  { n: "楓葉橘", hex: "#B5652E" },   { n: "酒紅", hex: "#7C1822" },
+  { n: "豆沙玫瑰", hex: "#B96A6C" }, { n: "裸粉透", hex: "#EFCDC9" },
+  { n: "貝殼粉", hex: "#E9C7C8", metal: ["#F8E8E8", "#D6ADB1"] },
+  { n: "牛奶白", hex: "#F4EEE8" },   { n: "霧灰藍", hex: "#B3BFCC" },
+  { n: "孔雀藍", hex: "#1E4A58" },   { n: "薄荷灰綠", hex: "#AFC7BC" },
+  { n: "紫丁香", hex: "#C8B7DD" },   { n: "奶油黃", hex: "#F0E0A4" },
+];
+const STYLES = [
+  { n: "貓眼", d: "磁吸光帶，轉手會流動" },
+  { n: "格紋", d: "菱格或蘇格蘭格，秋冬必備" },
+  { n: "腮紅暈染", d: "甲面中央暈出一團金粉光" },
+  { n: "漸層", d: "甲根到甲尖深淺過渡，溫柔耐看" },
+  { n: "手繪小花", d: "小雛菊、五瓣花散落在甲面" },
+  { n: "乾燥花", d: "真花壓進凝膠，可以排成花圈" },
+  { n: "透明亮粉", d: "裸透底加細閃，乾淨又有光" },
+  { n: "霧面", d: "啞光質地，低調的奶咖感" },
+  { n: "液態金屬", d: "一小塊金色鏡面，像融化的金子" },
+  { n: "蝴蝶結", d: "細線在甲面綁一個小蝴蝶結" },
+  { n: "跳色拼接", d: "每指不同顏色或花樣混搭" },
+  { n: "人魚貝殼", d: "貝殼紋路加珠光，海洋感" },
+];
+const BONUS = [
+  { n: "立體水滴", d: "透明凝膠點出小水珠" },
+  { n: "金箔", d: "碎金箔點在邊角" },
+  { n: "幻彩亮片", d: "星星、愛心、蝴蝶形亮片" },
+  { n: "白色拉線", d: "一道細白線劃過甲面" },
+  { n: "珍珠", d: "一兩顆小珍珠或金色鋼珠" },
+  { n: "楓葉", d: "秋天小楓葉貼紙或手繪" },
+  { n: "白色描邊", d: "甲緣細細一圈白邊" },
+  { n: "留白不加", d: "乾淨就好，不加飾品" },
+];
+
+const TAU = Math.PI * 2, POINTER = -Math.PI / 2;
+const rings = [
+  { items: COLORS, r0: .86, r1: 1,   rot: 0, locked: false },
+  { items: STYLES, r0: .56, r1: .845, rot: 0, locked: false },
+  { items: BONUS,  r0: .245, r1: .545, rot: 0, locked: false },
+];
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const $ = id => document.getElementById(id);
+const canvas = $("wheel"), ctx = canvas.getContext("2d");
+let size = 0, spinning = false;
+
+function css(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+function idx(ring) {
+  const step = TAU / ring.items.length;
+  const a = (((POINTER - ring.rot) % TAU) + TAU) % TAU;
+  return Math.floor(a / step) % ring.items.length;
+}
+function aimAt(ring, i, jitter) {
+  const step = TAU / ring.items.length;
+  return POINTER - (i + .5 + jitter) * step;
+}
+
+function resize() {
+  const box = canvas.parentElement.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  size = box.width;
+  canvas.width = Math.round(size * dpr);
+  canvas.height = Math.round(size * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  draw();
+}
+
+function draw() {
+  if (!size) return;
+  const c = size / 2, R = c - 4;
+  const seam = css("--seam"), ink = css("--ink");
+  const tones = [[css("--ring-a"), css("--ring-b")], [css("--ring-c"), css("--ring-d")]];
+  ctx.clearRect(0, 0, size, size);
+
+  rings.forEach((ring, ri) => {
+    const n = ring.items.length, step = TAU / n;
+    const ro = ring.r1 * R, rin = ring.r0 * R;
+    const hit = idx(ring);
+    ring.items.forEach((it, i) => {
+      const a0 = ring.rot + i * step, a1 = a0 + step;
+      ctx.beginPath();
+      ctx.arc(c, c, ro, a0, a1);
+      ctx.arc(c, c, rin, a1, a0, true);
+      ctx.closePath();
+      if (ri === 0) {
+        if (it.metal) {
+          const mid = a0 + step / 2;
+          const g = ctx.createLinearGradient(c + Math.cos(a0) * ro, c + Math.sin(a0) * ro, c + Math.cos(a1) * ro, c + Math.sin(a1) * ro);
+          g.addColorStop(0, it.metal[1]); g.addColorStop(.5, it.metal[0]); g.addColorStop(1, it.metal[1]);
+          ctx.fillStyle = g;
+        } else ctx.fillStyle = it.hex;
+      } else {
+        ctx.fillStyle = tones[ri - 1][i % 2];
+      }
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = seam;
+      ctx.stroke();
+
+      if (ri > 0) {
+        const fs = Math.max(13, R * (ri === 1 ? .07 : .068));
+        ctx.save();
+        ctx.translate(c, c);
+        ctx.rotate(a0 + step / 2);
+        ctx.fillStyle = ink;
+        ctx.globalAlpha = (!spinning && i === hit) ? 1 : .78;
+        ctx.font = `${i === hit && !spinning ? 700 : 400} ${fs}px "Microsoft JhengHei", "微軟正黑體", "PingFang TC", "Noto Sans TC", sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(it.n, (ro + rin) / 2, 0);
+        ctx.restore();
+      }
+    });
+    if (ring.locked) {
+      ctx.beginPath();
+      ctx.arc(c, c, (ro + rin) / 2, 0, TAU);
+      ctx.setLineDash([2, 6]);
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = ink;
+      ctx.globalAlpha = .35;
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+    }
+  });
+}
+
+function current() {
+  const [ci, si, bi] = rings.map(idx);
+  return { c: COLORS[ci], s: STYLES[si], b: BONUS[bi], ci, si, bi };
+}
+function sentence(r) {
+  const extra = r.b.n === "留白不加" ? "不用加飾品" : `加一點${r.b.n}`;
+  return `想做「${r.c.n}」色系的${r.s.n}，${extra}。細節交給你發揮！`;
+}
+function paint(el, color) {
+  el.style.background = color.metal ? `linear-gradient(135deg, ${color.metal[1]}, ${color.metal[0]} 50%, ${color.metal[1]})` : color.hex;
+}
+function render() {
+  const r = current();
+  paint($("c-sw"), r.c);
+  $("c-name").textContent = r.c.n;
+  $("c-no").textContent = "No." + String(r.ci + 1).padStart(2, "0");
+  $("s-name").textContent = r.s.n;
+  $("s-desc").textContent = r.s.d;
+  $("b-name").textContent = r.b.n;
+  $("b-desc").textContent = r.b.d;
+  $("say").textContent = sentence(r);
+}
+
+function ease(t) { return 1 - Math.pow(1 - t, 4); }
+function spin() {
+  if (spinning) return;
+  const active = rings.filter(r => !r.locked);
+  if (!active.length) { toast("三圈都鎖住了，先解鎖一圈再轉。"); return; }
+  spinning = true;
+  $("spin").disabled = $("spin2").disabled = true;
+  $("status").textContent = "轉動中…";
+  toast("");
+  const now = performance.now();
+  const plans = rings.map((ring, k) => {
+    if (ring.locked) return null;
+    const target = Math.floor(Math.random() * ring.items.length);
+    const base = aimAt(ring, target, (Math.random() - .5) * .6);
+    const delta = (((base - ring.rot) % TAU) + TAU) % TAU;
+    const turns = reduce ? 0 : 4 + k;
+    return { ring, from: ring.rot, to: ring.rot + delta + TAU * turns, dur: reduce ? 400 : 3000 + k * 700 };
+  }).filter(Boolean);
+
+  let lastKey = "";
+  function frame(t) {
+    let done = true;
+    plans.forEach(p => {
+      const k = Math.min(1, (t - now) / p.dur);
+      p.ring.rot = p.from + (p.to - p.from) * ease(k);
+      if (k < 1) done = false;
+    });
+    draw();
+    const key = rings.map(idx).join();
+    if (key !== lastKey) { lastKey = key; render(); }
+    if (!done) return requestAnimationFrame(frame);
+    rings.forEach(r => r.rot %= TAU);
+    spinning = false;
+    $("spin").disabled = $("spin2").disabled = false;
+    $("status").textContent = new Date().toLocaleDateString("zh-TW", { month: "numeric", day: "numeric" }) + " 轉出";
+    draw(); render(); save();
+  }
+  requestAnimationFrame(frame);
+}
+
+function toast(msg) { $("toast").textContent = msg; }
+
+const KEY = "nail-wheel-history-v2";
+function load() { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch { return []; } }
+function save() {
+  const r = current();
+  const list = load();
+  list.unshift({ ci: r.ci, si: r.si, bi: r.bi, t: Date.now() });
+  try { localStorage.setItem(KEY, JSON.stringify(list.slice(0, 15))); } catch {}
+  renderHistory();
+}
+function renderHistory() {
+  const list = load(), ol = $("hist");
+  ol.textContent = "";
+  list.forEach(h => {
+    const c = COLORS[h.ci], s = STYLES[h.si], b = BONUS[h.bi];
+    if (!c || !s || !b) return;
+    const li = document.createElement("li");
+    const dot = document.createElement("span"); dot.className = "dot"; paint(dot, c);
+    const txt = document.createElement("span"); txt.textContent = `${c.n} · ${s.n} · ${b.n}`;
+    const tm = document.createElement("time");
+    const d = new Date(h.t);
+    tm.dateTime = d.toISOString();
+    tm.textContent = `${d.getMonth() + 1}/${d.getDate()}`;
+    li.append(dot, txt, tm);
+    ol.append(li);
+  });
+  $("hist-empty").hidden = list.length > 0;
+  $("clear").hidden = list.length === 0;
+}
+
+let armed = false;
+$("clear").addEventListener("click", () => {
+  if (!armed) { armed = true; $("clear").textContent = "確定清除？"; setTimeout(() => { armed = false; $("clear").textContent = "清除紀錄"; }, 3000); return; }
+  try { localStorage.removeItem(KEY); } catch {}
+  armed = false; $("clear").textContent = "清除紀錄";
+  renderHistory();
+});
+
+rings.forEach((ring, i) => {
+  $("lock-" + i).addEventListener("click", e => {
+    if (spinning) return;
+    ring.locked = !ring.locked;
+    e.currentTarget.setAttribute("aria-pressed", ring.locked);
+    e.currentTarget.textContent = ring.locked ? "已鎖定" : "鎖定";
+    draw();
+  });
+});
+$("spin").addEventListener("click", spin);
+$("spin2").addEventListener("click", spin);
+$("copy").addEventListener("click", () => {
+  const text = $("say").textContent;
+  const fallback = () => { const s = getSelection(), rg = document.createRange(); rg.selectNodeContents($("say")); s.removeAllRanges(); s.addRange(rg); toast("已選取文字，請手動複製。"); };
+  try { navigator.clipboard.writeText(text).then(() => toast("已複製，傳給美甲師吧！"), fallback); } catch { fallback(); }
+});
+
+// Opening state: a sample combo (焦糖棕 · 格紋 · 金箔)
+rings[0].rot = aimAt(rings[0], 3, 0);
+rings[1].rot = aimAt(rings[1], 1, 0);
+rings[2].rot = aimAt(rings[2], 1, 0);
+
+new ResizeObserver(resize).observe(canvas.parentElement);
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", draw);
+new MutationObserver(draw).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+document.fonts && document.fonts.ready.then(draw);
+render(); renderHistory();
+</script>
